@@ -19,6 +19,51 @@
 | UI 组件 | Element Plus | 2.x |
 | 状态管理 | Pinia | 2.x |
 
+## 界面预览
+
+> 以下截图均来自 `sql/demo-data.sql` 导入的演示数据。
+
+**首页与商品列表**
+
+<p>
+  <img src="docs/screenshots/01-home.png" width="49%" alt="首页" />
+  <img src="docs/screenshots/02-product-list.png" width="49%" alt="商品列表" />
+</p>
+
+**商品详情与卖家主页**
+
+<p>
+  <img src="docs/screenshots/03-product-detail.png" width="49%" alt="商品详情" />
+  <img src="docs/screenshots/04-seller-home.png" width="49%" alt="卖家主页" />
+</p>
+
+**发布商品与我的发布**
+
+<p>
+  <img src="docs/screenshots/06-publish.png" width="49%" alt="发布商品" />
+  <img src="docs/screenshots/07-my-products.png" width="49%" alt="我的发布" />
+</p>
+
+**我的订单与登录页**
+
+<p>
+  <img src="docs/screenshots/08-my-orders.png" width="49%" alt="我的订单" />
+  <img src="docs/screenshots/05-login.png" width="49%" alt="登录页" />
+</p>
+
+**管理后台：数据看板与商品审核**
+
+<p>
+  <img src="docs/screenshots/09-admin-dashboard.png" width="49%" alt="数据看板" />
+  <img src="docs/screenshots/10-admin-product.png" width="49%" alt="商品审核" />
+</p>
+
+**管理后台：举报处理**
+
+<p>
+  <img src="docs/screenshots/11-admin-report.png" width="70%" alt="举报处理" />
+</p>
+
 ## 目录结构
 
 ```
