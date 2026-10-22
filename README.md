@@ -98,6 +98,23 @@ npm run dev
 
 浏览器打开 http://localhost:5173
 
+## 测试
+
+```bash
+cd backend
+mvn test
+```
+
+15 个 JUnit 5 单元测试，使用 Mockito 隔离数据库依赖，不启动 Spring 上下文，整体执行约 2 秒。
+
+| 测试类 | 数量 | 覆盖内容 |
+| --- | --- | --- |
+| `OrderServiceImplTest` | 7 | 订单状态机与买卖双方权限：不能买自己的商品、一物不二卖、买家不能替卖家确认、卖家不能单方面标记完成、终态不可流转 |
+| `AuthInterceptorTest` | 3 | 鉴权：无 token 返回 401、**禁用用户的旧 token 立即失效**、越权访问返回 403 |
+| `FavoriteServiceImplTest` | 2 | 不能收藏自己的商品、唯一键冲突翻译为友好提示 |
+| `CommentServiceImplTest` | 2 | 发布者不能自问自答、**回复的回复归并到同一条一级留言下** |
+| `PageQueryTest` | 1 | 分页 size 强制上限 100、非法页码归到第 1 页 |
+
 ## 默认账号
 
 | 角色 | 账号 | 密码 |
