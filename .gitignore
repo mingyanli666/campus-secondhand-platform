@@ -1,0 +1,38 @@
+# ---------- Java / Maven ----------
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---------- 前端 ----------
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 运行时产物 ----------
+# 用户上传的图片不进版本库（体积大、内容不可控）
+# 但演示数据配套的占位图必须提交，否则别人 clone 下来演示数据全是裂图
+/backend/uploads/*
+!/backend/uploads/demo/
+logs/
+*.log
+
+# ---------- IDE ----------
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# ---------- 工具生成的本地目录 ----------
+.commandcode/
+
+# ---------- 本地配置（含数据库密码，不要提交） ----------
+application-local.yml
+application-dev.yml
