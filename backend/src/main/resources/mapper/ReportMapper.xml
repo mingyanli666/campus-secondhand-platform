@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.ReportMapper">
+
+    <!--
+      举报列表。
+
+      三个注意点：
+      1. biz_report 和 biz_product 都有 deleted 字段，都要自己写条件。
+         但商品那张关联**故意不加 p.deleted = 0** —— 商品已经被删了，
+         举报记录仍然要能看到，否则管理员点进列表发现"被举报的商品不见了"，
+         这个举报就没法处理了。商品状态通过 productStatus 返回给前端展示。
+
+      2. 用 CASE WHEN 把"待处理"排在最前面。
+         管理员最关心的是"还有什么没处理"，而不是"最新举报的是什么"。
+         排序策略就是产品策略 —— 把该做的事顶到最上面。
+
+      3. handler_id 用 LEFT JOIN：待处理的举报还没有处理人，INNER JOIN 会让它消失。
+    -->
+    <select id="selectReportPage" resultType="com.digital.platform.vo.ReportVO">
+        SELECT
+            r.id,
+            r.product_id     AS productId,
+            p.title          AS productTitle,
+            p.cover_image    AS productCover,
+            p.status         AS productStatus,
+            r.user_id        AS userId,
+            u.nickname       AS reporterNickname,
+            r.type,
+            r.reason,
+            r.status,
+            r.handle_result  AS handleResult,
+            h.nickname       AS handlerName,
+            r.handle_time    AS handleTime,
+            r.create_time    AS createTime
+        FROM biz_report r
+        LEFT JOIN biz_product p ON p.id = r.product_id
+        LEFT JOIN sys_user u ON u.id = r.user_id
+        LEFT JOIN sys_user h ON h.id = r.handler_id
+        <where>
+            r.deleted = 0
+            <if test="query.userId != null">
+                AND r.user_id = #{query.userId}
+            </if>
+            <if test="query.status != null">
+                AND r.status = #{query.status}
+            </if>
+            <if test="query.type != null">
+                AND r.type = #{query.type}
+            </if>
+        </where>
+        ORDER BY
+            CASE WHEN r.status = 0 THEN 0 ELSE 1 END ASC,
+            r.create_time DESC
+    </select>
+
+</mapper>
