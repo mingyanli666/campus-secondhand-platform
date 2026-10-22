@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.OrderMapper">
+
+    <!--
+      我的订单列表。
+
+      两个关键点：
+      1. 商品信息（标题/封面/价格）不从 biz_product 取，直接用订单表里的快照列。
+         商品被卖家改过之后，订单显示的还是成交当时的样子。
+         JOIN 用户表只是为了拿买卖双方的昵称头像。
+
+      2. role 只决定"从哪个视角查"（我是买家还是卖家），
+         具体是谁永远由 #{userId} 决定 —— 前端只能选视角，改不了身份。
+    -->
+    <select id="selectOrderPage" resultType="com.digital.platform.vo.OrderVO">
+        SELECT
+            o.id,
+            o.order_no        AS orderNo,
+            o.product_id      AS productId,
+            o.product_title   AS productTitle,
+            o.product_cover   AS productCover,
+            o.price,
+            o.buyer_id        AS buyerId,
+            o.seller_id       AS sellerId,
+            o.contact,
+            o.trade_location  AS tradeLocation,
+            o.remark,
+            o.cancel_reason   AS cancelReason,
+            o.status,
+            o.finish_time     AS finishTime,
+            o.create_time     AS createTime,
+            b.nickname        AS buyerNickname,
+            b.avatar          AS buyerAvatar,
+            s.nickname        AS sellerNickname,
+            s.avatar          AS sellerAvatar
+        FROM biz_order o
+        LEFT JOIN sys_user b ON b.id = o.buyer_id
+        LEFT JOIN sys_user s ON s.id = o.seller_id
+        <where>
+            o.deleted = 0
+            <choose>
+                <when test="query.role == 'SELL'">
+                    AND o.seller_id = #{userId}
+                </when>
+                <otherwise>
+                    AND o.buyer_id = #{userId}
+                </otherwise>
+            </choose>
+            <if test="query.status != null">
+                AND o.status = #{query.status}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC, o.id DESC
+    </select>
+
+</mapper>
