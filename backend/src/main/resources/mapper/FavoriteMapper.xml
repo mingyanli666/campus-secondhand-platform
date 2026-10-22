@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.FavoriteMapper">
+
+    <!--
+      我的收藏列表：收藏记录 JOIN 商品。
+      注意 biz_favorite 没有 deleted 字段（取消收藏是物理删除），
+      但 biz_product 有，所以这里必须写 p.deleted = 0 —— 否则已删除的商品
+      还会出现在别人的收藏夹里，点进去却是"商品不存在"。
+    -->
+    <select id="selectFavoriteProductPage" resultType="com.digital.platform.vo.ProductListVO">
+        SELECT
+            p.id,
+            p.title,
+            p.cover_image     AS coverImage,
+            p.price,
+            p.original_price  AS originalPrice,
+            p.brand,
+            p.model,
+            p.condition_level AS conditionLevel,
+            p.warranty,
+            p.status,
+            p.view_count      AS viewCount,
+            p.favorite_count  AS favoriteCount,
+            p.create_time     AS createTime,
+            p.category_id     AS categoryId,
+            c.name            AS categoryName,
+            u.id              AS sellerId,
+            u.nickname        AS sellerNickname,
+            u.avatar          AS sellerAvatar
+        FROM biz_favorite f
+        INNER JOIN biz_product p ON p.id = f.product_id AND p.deleted = 0
+        LEFT JOIN sys_category c ON c.id = p.category_id AND c.deleted = 0
+        LEFT JOIN sys_user u ON u.id = p.user_id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC, f.id DESC
+    </select>
+
+</mapper>
