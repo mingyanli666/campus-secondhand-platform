@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.CategoryMapper">
+
+    <!--
+      管理后台分类列表。
+      和用户列表不同：sys_category 有 deleted 字段，所以必须自己写 c.deleted = 0。
+      手写 SQL 加逻辑删除条件 —— 这是本项目第三次强调这个坑了。
+    -->
+    <select id="selectAdminCategoryList" resultType="com.digital.platform.vo.AdminCategoryVO">
+        SELECT
+            c.id,
+            c.name,
+            c.icon,
+            c.sort,
+            c.status,
+            (SELECT COUNT(*) FROM biz_product p
+              WHERE p.category_id = c.id AND p.deleted = 0) AS productCount
+        FROM sys_category c
+        WHERE c.deleted = 0
+        ORDER BY c.sort ASC, c.id ASC
+    </select>
+
+</mapper>
