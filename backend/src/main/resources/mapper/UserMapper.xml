@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.UserMapper">
+
+    <!--
+      管理后台用户列表。
+      注意这里没有 deleted = 0 —— sys_user 表压根没有 deleted 字段（用户用 status 控制启用/禁用），
+      这是第一阶段为了避开"逻辑删除 + username 唯一索引冲突"特意做的设计，在这里体现出好处了。
+      对比 ProductMapper.xml：那张表就必须自己写 deleted = 0。
+
+      productCount 用"相关子查询"实现：
+      每个用户一行，子查询单独去数他的商品数。写成 LEFT JOIN + GROUP BY 也行，
+      但子查询在这里更直观，而且 MySQL 对相关子查询有优化，数据量不大时性能完全够。
+    -->
+    <select id="selectAdminUserPage" resultType="com.digital.platform.vo.AdminUserVO">
+        SELECT
+            u.id,
+            u.username,
+            u.nickname,
+            u.avatar,
+            u.phone,
+            u.email,
+            u.gender,
+            u.campus,
+            u.intro,
+            u.role,
+            u.status,
+            u.credit_score   AS creditScore,
+            u.last_login_time AS lastLoginTime,
+            u.create_time    AS createTime,
+            (SELECT COUNT(*) FROM biz_product p
+              WHERE p.user_id = u.id AND p.deleted = 0) AS productCount
+        FROM sys_user u
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (
+                    u.username LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR u.phone LIKE CONCAT('%', #{query.keyword}, '%')
+                )
+            </if>
+            <if test="query.role != null and query.role != ''">
+                AND u.role = #{query.role}
+            </if>
+            <if test="query.status != null">
+                AND u.status = #{query.status}
+            </if>
+        </where>
+        ORDER BY u.create_time DESC, u.id DESC
+    </select>
+
+</mapper>
