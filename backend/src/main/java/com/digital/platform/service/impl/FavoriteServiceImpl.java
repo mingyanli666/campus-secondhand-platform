@@ -3,6 +3,7 @@ package com.digital.platform.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.digital.platform.cache.ProductCache;
 import com.digital.platform.common.enums.ProductStatus;
 import com.digital.platform.common.exception.BusinessException;
 import com.digital.platform.common.request.PageQuery;
@@ -29,6 +30,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     private final FavoriteMapper favoriteMapper;
     private final ProductMapper productMapper;
+    private final ProductCache productCache;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,6 +67,9 @@ public class FavoriteServiceImpl implements FavoriteService {
                 .setSql("favorite_count = favorite_count + 1")
                 .eq(Product::getId, productId));
 
+        // 详情缓存里存着 favoriteCount，收藏数变了必须让它失效
+        productCache.evict(productId);
+
         log.debug("用户 {} 收藏商品 {}", userId, productId);
     }
 
@@ -85,6 +90,8 @@ public class FavoriteServiceImpl implements FavoriteService {
         productMapper.update(null, Wrappers.<Product>lambdaUpdate()
                 .setSql("favorite_count = GREATEST(favorite_count - 1, 0)")
                 .eq(Product::getId, productId));
+
+        productCache.evict(productId);
 
         log.debug("用户 {} 取消收藏商品 {}", userId, productId);
     }

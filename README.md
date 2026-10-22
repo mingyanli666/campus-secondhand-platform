@@ -10,6 +10,7 @@
 | JDK | OpenJDK | 17 |
 | 持久层 | MyBatis-Plus | 3.5.5 |
 | 数据库 | MySQL | 8.0 |
+| 缓存 | Redis | 7.x |
 | 鉴权 | JWT (jjwt) | 0.12.5 |
 | 接口文档 | Knife4j (OpenAPI 3) | 4.5.0 |
 | 工具库 | Hutool | 5.8.27 |
@@ -66,7 +67,18 @@ mysql -uroot -p --default-character-set=utf8mb4 used_digital_platform < sql/demo
 > 演示商品的图片由 `sql/demo-data.sql` 配套使用 `backend/uploads/demo/` 下的占位图，
 > 重新导入时会自动覆盖旧的演示数据（只清理 id ≥ 100 的记录，不影响你手动创建的数据）。
 
-### 2. 修改后端配置
+### 2. 启动 Redis
+
+商品详情、分类列表和浏览量都依赖 Redis（未启动时会自动降级为直接查库，功能不受影响，只是没有缓存收益）。
+
+```bash
+docker run -d --name udp-redis -p 6379:6379 redis:7-alpine
+```
+
+没有 Docker 的话，装一个 Memurai 或 Redis for Windows 也可以，默认连 `localhost:6379`。
+连接信息在 `application.yml` 的 `spring.data.redis` 下，支持 `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` 环境变量覆盖。
+
+### 3. 修改后端配置
 
 打开 `backend/src/main/resources/application.yml`，把数据库账号密码改成你本机的：
 
@@ -77,7 +89,7 @@ spring:
     password: 你的密码
 ```
 
-### 3. 启动后端
+### 4. 启动后端
 
 ```bash
 cd backend
@@ -88,7 +100,7 @@ mvn spring-boot:run
 
 首次启动会自动创建默认账号（见 `DataInitializer`）。
 
-### 4. 启动前端
+### 5. 启动前端
 
 ```bash
 cd frontend

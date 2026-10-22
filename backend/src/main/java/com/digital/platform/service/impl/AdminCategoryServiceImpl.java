@@ -1,6 +1,7 @@
 package com.digital.platform.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.digital.platform.cache.CategoryCache;
 import com.digital.platform.common.exception.BusinessException;
 import com.digital.platform.common.result.ResultCode;
 import com.digital.platform.dto.CategorySaveDTO;
@@ -24,6 +25,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
     private final CategoryMapper categoryMapper;
     private final ProductMapper productMapper;
+    private final CategoryCache categoryCache;
 
     @Override
     public List<AdminCategoryVO> listAll() {
@@ -39,6 +41,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         Category category = new Category();
         applyFields(category, dto);
         categoryMapper.insert(category);
+        categoryCache.evict();
 
         log.info("新增分类 {} - {}", category.getId(), category.getName());
         return category.getId();
@@ -54,6 +57,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         category.setId(id);
         applyFields(category, dto);
         categoryMapper.updateById(category);
+        categoryCache.evict();
     }
 
     @Override
@@ -74,6 +78,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         // 这里走逻辑删除（Category 有 @TableLogic），数据仍可追溯
         categoryMapper.deleteById(id);
+        categoryCache.evict();
         log.info("删除分类 {} - {}", id, category.getName());
     }
 
@@ -86,6 +91,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         category.setId(id);
         category.setStatus(status);
         categoryMapper.updateById(category);
+        categoryCache.evict();
     }
 
     // ============================================================

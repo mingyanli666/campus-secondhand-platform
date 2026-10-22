@@ -8,6 +8,7 @@ import com.digital.platform.vo.ProductListVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ProductMapper extends BaseMapper<Product> {
@@ -31,4 +32,13 @@ public interface ProductMapper extends BaseMapper<Product> {
      */
     @Select("SELECT COALESCE(SUM(view_count), 0) FROM biz_product WHERE deleted = 0")
     Long sumViewCount();
+
+    /**
+     * 批量回写浏览量。
+     * <p>
+     * 手写 SQL 必须自己写 {@code deleted = 0} —— 逻辑删除只对
+     * MyBatis-Plus 自动生成的方法生效。
+     */
+    @Update("UPDATE biz_product SET view_count = view_count + #{delta} WHERE id = #{id} AND deleted = 0")
+    int addViewCount(@Param("id") Long id, @Param("delta") long delta);
 }

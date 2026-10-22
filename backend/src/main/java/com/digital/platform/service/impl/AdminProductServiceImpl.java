@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.digital.platform.cache.ProductCache;
 import com.digital.platform.common.enums.AuditAction;
 import com.digital.platform.common.enums.NotificationType;
 import com.digital.platform.common.enums.ProductStatus;
@@ -42,6 +43,7 @@ public class AdminProductServiceImpl implements AdminProductService {
     private final AuditRecordMapper auditRecordMapper;
     private final NotificationService notificationService;
     private final OrderService orderService;
+    private final ProductCache productCache;
 
     @Override
     public PageResult<ProductListVO> page(ProductQuery query) {
@@ -98,6 +100,9 @@ public class AdminProductServiceImpl implements AdminProductService {
                 pass ? AuditAction.PASS : AuditAction.REJECT,
                 pass ? null : dto.getReason());
 
+        // 审核改变了商品状态和驳回原因，详情缓存必须作废
+        productCache.evict(productId);
+
         // ---------- 第 3 件事：通知卖家 ----------
         if (pass) {
             notificationService.send(product.getUserId(), NotificationType.AUDIT,
@@ -135,6 +140,8 @@ public class AdminProductServiceImpl implements AdminProductService {
 
         saveRecord(product, adminId, adminName, AuditAction.FORCE_OFF, dto.getReason());
 
+        productCache.evict(productId);
+
         // 商品被下架了，它上面没走完的订单不能再挂着 ——
         // 否则买家还在等交易，卖家却已经被平台下架了商品。
         // 这里只传管理员填的原因，"商品已被平台下架"这句话由通知模板统一组织，
@@ -159,6 +166,7 @@ public class AdminProductServiceImpl implements AdminProductService {
         productMapper.deleteById(productId);
         productImageMapper.delete(
                 Wrappers.<ProductImage>lambdaQuery().eq(ProductImage::getProductId, productId));
+        productCache.evict(productId);
     }
 
     @Override

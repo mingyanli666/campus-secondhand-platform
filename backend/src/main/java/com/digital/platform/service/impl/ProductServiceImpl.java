@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.digital.platform.cache.ProductCache;
+import com.digital.platform.cache.ViewCountCache;
 import com.digital.platform.common.constant.Constants;
 import com.digital.platform.common.enums.ProductStatus;
 import com.digital.platform.common.enums.RoleType;
@@ -43,6 +45,8 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
     private final FavoriteService favoriteService;
+    private final ProductCache productCache;
+    private final ViewCountCache viewCountCache;
 
     // ============================================================
     //  发布 / 编辑
@@ -66,6 +70,8 @@ public class ProductServiceImpl implements ProductService {
 
         productMapper.insert(product);
         saveImages(product.getId(), dto.getImages());
+        // 极端情况下这个 id 之前可能被缓存成"不存在"（空值哨兵），顺手清掉
+        productCache.evict(product.getId());
 
         log.info("用户 {} 发布商品 {}，状态：待审核", userId, product.getId());
         return product.getId();
@@ -98,6 +104,9 @@ public class ProductServiceImpl implements ProductService {
         productImageMapper.delete(
                 Wrappers.<ProductImage>lambdaQuery().eq(ProductImage::getProductId, productId));
         saveImages(productId, dto.getImages());
+
+        // 内容变了，缓存立刻作废 —— 否则下一个访客看到的还是旧价格
+        productCache.evict(productId);
     }
 
     // ============================================================
@@ -115,6 +124,7 @@ public class ProductServiceImpl implements ProductService {
         productMapper.deleteById(productId);
         productImageMapper.delete(
                 Wrappers.<ProductImage>lambdaQuery().eq(ProductImage::getProductId, productId));
+        productCache.evict(productId);
     }
 
     @Override
@@ -129,6 +139,8 @@ public class ProductServiceImpl implements ProductService {
         update.setStatus(ProductStatus.OFF_SHELF.getCode());
         update.setUpdateTime(LocalDateTime.now());
         productMapper.updateById(update);
+
+        productCache.evict(productId);
     }
 
     @Override
@@ -147,6 +159,8 @@ public class ProductServiceImpl implements ProductService {
                 .set(Product::getRejectReason, null)
                 .set(Product::getUpdateTime, LocalDateTime.now())
                 .eq(Product::getId, productId));
+
+        productCache.evict(productId);
     }
 
     // ============================================================
@@ -166,20 +180,64 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDetailVO detail(Long productId, Long currentUserId) {
-        Product product = productMapper.selectById(productId);
-        if (product == null) {
+        // ① 缓存穿透防护：已经确认过不存在的 ID，直接返回，不再打数据库
+        if (productCache.isKnownMissing(productId)) {
             throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
         }
 
-        boolean owner = currentUserId != null && currentUserId.equals(product.getUserId());
+        // ② 读缓存。命中就省掉了 商品 + 图片 + 分类 + 卖家 这 4 次查询
+        ProductDetailVO vo = productCache.getDetail(productId);
+        if (vo == null) {
+            vo = buildDetail(productId);
+            if (vo == null) {
+                // 商品确实不存在：写入空值哨兵（TTL 2 分钟），
+                // 防止有人用同一个不存在的 ID 反复请求把数据库打穿
+                productCache.putEmpty(productId);
+                throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
+            }
+            productCache.putDetail(productId, vo);
+        }
 
-        // 未上架的商品只有发布者本人和管理员能看，
-        // 否则别人拿到 ID 就能看到还没过审（可能违规）的内容。
-        // 注意 isAdmin 会查一次库，所以只在确实需要时才调用，避免每次浏览详情都多一次查询。
-        if (!ProductStatus.ON_SALE.getCode().equals(product.getStatus()) && !owner) {
+        // ③ 权限校验。直接用缓存里的 status / sellerId，不需要额外查库
+        boolean owner = currentUserId != null && currentUserId.equals(vo.getSellerId());
+        if (!ProductStatus.ON_SALE.getCode().equals(vo.getStatus()) && !owner) {
             if (currentUserId == null || !isAdmin(currentUserId)) {
                 throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
             }
+        }
+
+        // ④ 用户相关字段绝不能进缓存，每次按当前用户实时计算
+        vo.setOwner(owner);
+        vo.setFavorite(currentUserId != null && favoriteService.isFavorite(currentUserId, productId));
+
+        // ⑤ 浏览量：Redis 自增 + 定时批量回写，避免每次浏览都对同一行做 UPDATE
+        if (!owner) {
+            long delta = viewCountCache.increment(productId);
+            if (delta < 0) {
+                // Redis 不可用：降级为直接改库，保证计数不丢
+                productMapper.addViewCount(productId, 1L);
+                vo.setViewCount(vo.getViewCount() + 1);
+            } else {
+                // 展示值 = 缓存基线 + 自缓存建立以来的增量
+                vo.setViewCount(vo.getViewCount() + (int) delta);
+            }
+        }
+
+        return vo;
+    }
+
+    /**
+     * 从数据库组装商品详情（4 次查询：商品、图片、分类、卖家）。
+     * <p>
+     * 只填<b>与当前用户无关</b>的字段 —— owner / favorite 这类用户相关字段
+     * 绝不能进缓存，否则张三打开同一个商品会看到李四的收藏状态。
+     *
+     * @return 商品不存在时返回 null
+     */
+    private ProductDetailVO buildDetail(Long productId) {
+        Product product = productMapper.selectById(productId);
+        if (product == null) {
+            return null;
         }
 
         ProductDetailVO vo = new ProductDetailVO();
@@ -203,12 +261,6 @@ public class ProductServiceImpl implements ProductService {
         vo.setFavoriteCount(product.getFavoriteCount());
         vo.setCreateTime(product.getCreateTime());
         vo.setCategoryId(product.getCategoryId());
-        vo.setOwner(owner);
-        // 是否已收藏：只有登录用户才有意义，游客一律 false。
-        // 这里直接问 FavoriteService，而不是自己再写一遍收藏表的查询 ——
-        // "怎么判断收藏"这件事只应该有一处实现。
-        vo.setFavorite(currentUserId != null
-                && favoriteService.isFavorite(currentUserId, productId));
 
         // 图片列表
         List<ProductImage> images = productImageMapper.selectList(
@@ -229,15 +281,6 @@ public class ProductServiceImpl implements ProductService {
             vo.setSellerAvatar(seller.getAvatar());
             vo.setSellerCreditScore(seller.getCreditScore());
             vo.setSellerCampus(seller.getCampus());
-        }
-
-        // 浏览量 +1：用 SQL 原子自增，不能用「查出来 +1 再存回去」，
-        // 那样多个用户同时看会互相覆盖，导致计数偏小
-        if (!owner) {
-            productMapper.update(null, Wrappers.<Product>lambdaUpdate()
-                    .setSql("view_count = view_count + 1")
-                    .eq(Product::getId, productId));
-            vo.setViewCount(product.getViewCount() + 1);
         }
 
         return vo;

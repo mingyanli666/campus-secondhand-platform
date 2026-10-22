@@ -45,6 +45,12 @@
             <version>${mybatis-plus.version}</version>
         </dependency>
 
+        <!-- Redis：缓存商品详情、分类字典、用户状态，以及浏览量计数 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- MySQL 驱动 -->
         <dependency>
             <groupId>com.mysql</groupId>
