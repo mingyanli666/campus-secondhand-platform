@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.digital.platform.mapper.ProductMapper">
+
+    <!--
+      商品列表分页查询。
+      注意几个关键点：
+      1. 手动写了 p.deleted = 0 —— MyBatis-Plus 的逻辑删除只会自动作用于
+         它自己生成的方法，手写 SQL 必须自己处理，这是新手最容易漏的地方。
+      2. 用 LEFT JOIN 而不是 INNER JOIN —— 万一分类被删了，商品记录也不该消失。
+      3. 排序用 <choose> 白名单，绝不把前端传的字符串直接拼进 ORDER BY（SQL 注入）。
+    -->
+    <select id="selectProductPage" resultType="com.digital.platform.vo.ProductListVO">
+        SELECT
+            p.id,
+            p.title,
+            p.cover_image       AS coverImage,
+            p.price,
+            p.original_price    AS originalPrice,
+            p.brand,
+            p.model,
+            p.condition_level   AS conditionLevel,
+            p.warranty,
+            p.status,
+            p.reject_reason     AS rejectReason,
+            p.view_count        AS viewCount,
+            p.favorite_count    AS favoriteCount,
+            p.create_time       AS createTime,
+            p.category_id       AS categoryId,
+            c.name              AS categoryName,
+            u.id                AS sellerId,
+            u.nickname          AS sellerNickname,
+            u.avatar            AS sellerAvatar
+        FROM biz_product p
+        LEFT JOIN sys_category c ON c.id = p.category_id AND c.deleted = 0
+        LEFT JOIN sys_user u ON u.id = p.user_id
+        <where>
+            p.deleted = 0
+            <!-- 公开列表只展示已上架商品；「我的发布」则按传入的 status 筛选 -->
+            <choose>
+                <when test="query.onlyOnSale != null and query.onlyOnSale">
+                    AND p.status = 1
+                </when>
+                <when test="query.status != null">
+                    AND p.status = #{query.status}
+                </when>
+            </choose>
+            <if test="query.sellerId != null">
+                AND p.user_id = #{query.sellerId}
+            </if>
+            <if test="query.categoryId != null">
+                AND p.category_id = #{query.categoryId}
+            </if>
+            <if test="query.conditionLevel != null and query.conditionLevel != ''">
+                AND p.condition_level = #{query.conditionLevel}
+            </if>
+            <if test="query.brand != null and query.brand != ''">
+                AND p.brand = #{query.brand}
+            </if>
+            <if test="query.minPrice != null">
+                AND p.price &gt;= #{query.minPrice}
+            </if>
+            <if test="query.maxPrice != null">
+                AND p.price &lt;= #{query.maxPrice}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (
+                    p.title LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR p.brand LIKE CONCAT('%', #{query.keyword}, '%')
+                    OR p.model LIKE CONCAT('%', #{query.keyword}, '%')
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="query.sort == 'priceAsc'">
+                ORDER BY p.price ASC, p.id DESC
+            </when>
+            <when test="query.sort == 'priceDesc'">
+                ORDER BY p.price DESC, p.id DESC
+            </when>
+            <when test="query.sort == 'hot'">
+                ORDER BY p.view_count DESC, p.id DESC
+            </when>
+            <otherwise>
+                ORDER BY p.create_time DESC, p.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>
