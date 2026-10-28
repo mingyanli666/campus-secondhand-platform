@@ -88,13 +88,32 @@ async function handleSubmit() {
   try {
     await userStore.doLogin(form)
     ElMessage.success('登录成功')
-    // 登录前被拦截的页面，登录后原路返回
-    router.push(route.query.redirect || '/')
+    router.push(resolveRedirect())
   } catch {
     // 错误提示已由请求拦截器统一处理
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 登录后该跳到哪。
+ *
+ * 原来直接 `router.push(route.query.redirect || '/')`，看上去没问题，
+ * 但有个体验缺陷：未登录时访问 /admin/product，路由守卫会跳转到
+ * /login?redirect=/admin/product；如果这时登录的是普通账号，就会被
+ * 送回管理页，紧接着收到「没有访问权限」—— 刚提示登录成功就报错。
+ *
+ * 所以这里要按当前身份校验一下目标页面能不能进，进不去就回首页。
+ */
+function resolveRedirect() {
+  const target = route.query.redirect
+  if (!target || typeof target !== 'string') return '/'
+
+  // /admin 下的页面只有管理员能进
+  if (target.startsWith('/admin') && !userStore.isAdmin) return '/'
+
+  return target
 }
 </script>
 
