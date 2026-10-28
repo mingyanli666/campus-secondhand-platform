@@ -148,7 +148,7 @@ const hasFilter = computed(
 async function loadList() {
   loading.value = true
   try {
-    const data = await pageProducts(query)
+    const data = await pageProducts(query, 'product:list')
     list.value = data.records
     total.value = Number(data.total)
   } finally {

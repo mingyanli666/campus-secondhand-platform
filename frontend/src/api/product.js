@@ -1,11 +1,13 @@
 import request from '@/utils/request'
 
-/** 商品列表 / 检索（公开） */
-export function pageProducts(params) {
+/** 商品列表 / 检索（公开）
+ *  传 requestKey 时，同一 key 只保留最后一次请求，避免先发后至的响应覆盖新结果 */
+export function pageProducts(params, requestKey) {
   return request({
     url: '/product/page',
     method: 'get',
-    params
+    params,
+    requestKey
   })
 }
 
@@ -60,10 +62,11 @@ export function resubmitProduct(id) {
 }
 
 /** 我的发布 */
-export function myProducts(params) {
+export function myProducts(params, requestKey) {
   return request({
     url: '/product/mine',
     method: 'get',
-    params
+    params,
+    requestKey
   })
 }

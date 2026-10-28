@@ -9,11 +9,12 @@ export function getDashboardStats() {
 }
 
 /** 商品列表（含所有状态） */
-export function adminPageProducts(params) {
+export function adminPageProducts(params, requestKey) {
   return request({
     url: '/admin/product/page',
     method: 'get',
-    params
+    params,
+    requestKey
   })
 }
 
@@ -54,11 +55,12 @@ export function getAuditRecords(id) {
 /* ==================== 用户管理 ==================== */
 
 /** 用户列表 */
-export function adminPageUsers(params) {
+export function adminPageUsers(params, requestKey) {
   return request({
     url: '/admin/user/page',
     method: 'get',
-    params
+    params,
+    requestKey
   })
 }
 
@@ -127,11 +129,12 @@ export function updateCategoryStatus(id, data) {
 /* ==================== 举报处理 ==================== */
 
 /** 举报列表（待处理优先） */
-export function adminPageReports(params) {
+export function adminPageReports(params, requestKey) {
   return request({
     url: '/admin/report/page',
     method: 'get',
-    params
+    params,
+    requestKey
   })
 }
 

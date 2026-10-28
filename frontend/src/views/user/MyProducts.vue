@@ -141,7 +141,7 @@ const statusOf = productStatus
 async function loadList() {
   loading.value = true
   try {
-    const data = await myProducts(query)
+    const data = await myProducts(query, 'my:products')
     list.value = data.records
     total.value = Number(data.total)
   } finally {

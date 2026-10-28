@@ -359,7 +359,7 @@ const statusOf = productStatus
 async function loadList() {
   loading.value = true
   try {
-    const data = await adminPageProducts(query)
+    const data = await adminPageProducts(query, 'admin:product:list')
     list.value = data.records
     total.value = Number(data.total)
   } finally {

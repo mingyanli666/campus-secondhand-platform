@@ -202,7 +202,7 @@ const query = reactive({
 async function loadList() {
   loading.value = true
   try {
-    const data = await adminPageUsers(query)
+    const data = await adminPageUsers(query, 'admin:user:list')
     list.value = data.records
     total.value = Number(data.total)
   } finally {

@@ -234,7 +234,7 @@ function statusTag(status) {
 async function loadList() {
   loading.value = true
   try {
-    const data = await adminPageReports(query)
+    const data = await adminPageReports(query, 'admin:report:list')
     list.value = data.records
     total.value = Number(data.total)
   } finally {
