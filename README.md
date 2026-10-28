@@ -173,6 +173,60 @@ mvn test
 | `CommentServiceImplTest` | 2 | 发布者不能自问自答、**回复的回复归并到同一条一级留言下** |
 | `PageQueryTest` | 1 | 分页 size 强制上限 100、非法页码归到第 1 页 |
 
+## 前端构建优化
+
+前端最初是 Element Plus **全量引入**（`app.use(ElementPlus)` + 293 个图标全部全局注册），
+构建后单个 `element` chunk 就有 **1.09 MB，占全部 JS 的 78%**。
+
+排查下来是两个原因叠加：
+
+1. **组件与图标全量引入** —— 项目实际只用到约 30 个组件、55 个图标；
+2. **`manualChunks` 写成了包名形式**（`{ element: ['element-plus'] }`）。
+   这种写法会把整包当成 entry point，**entry 的导出无法被 tree-shaking 裁剪**，
+   所以即使改成按需引入也几乎没有效果。改成函数形式后才真正生效。
+
+| 指标 | 优化前 | 优化后 | 变化 |
+| --- | --- | --- | --- |
+| `element` chunk | 1,089.63 kB | 843.22 kB | **-22.6%** |
+| 同上（gzip） | 342.14 kB | 265.06 kB | **-22.5%** |
+| Element Plus CSS | 363.01 kB | 267.48 kB | **-26.3%** |
+| JS 总计 | 1,389.97 kB | 1,271.48 kB | -8.5% |
+| CSS 总计 | 393.38 kB | 299.57 kB | **-23.8%** |
+| 产物总计 | 1,783.35 kB | 1,571.05 kB | **-11.9%** |
+
+> 需要说明的是：gzip 后整体只降低约 8%，因为 gzip 本身已经压缩掉了相当一部分重复内容，
+> **未压缩体积的降幅不能直接等同于传输体积的降幅**。
+
+关键实现：
+
+- `vite.config.js` 用 `unplugin-vue-components` + `ElementPlusResolver` 按需引入模板里的 `<el-xxx>`；
+- `src/utils/icons.js` 是**显式图标登记表**。图标不能靠自动按需引入解决 ——
+  左侧菜单、统计卡片、分类图标（存于数据库 `sys_category.icon`）都是
+  `<component :is="xxx" />`，构建期无法静态分析，必须人工登记；
+- `src/utils/icons.spec.js` 里有一条**契约测试**：扫描所有 `.vue`，断言模板里写死的图标
+  都已登记，防止以后漏登记导致图标渲染成空白；
+- `manualChunks` 由包名形式改为函数形式（见上）。
+
+## 前端测试
+
+```bash
+cd frontend
+npm test          # 跑一次
+npm run test:cov  # 带覆盖率
+```
+
+39 个 Vitest 单元测试，jsdom 环境，约 2.5 秒跑完，**语句覆盖率 93.0%、分支覆盖率 92.1%**。
+
+| 测试文件 | 数量 | 覆盖内容 |
+| --- | --- | --- |
+| `utils/format.spec.js` | 18 | 价格/时间/相对时间格式化，未知状态码兜底，非法时间不抛异常 |
+| `utils/request.spec.js` | 8 | Result 外壳剥离、业务错误码提示、401 清登录态、**同 key 请求竞态取消** |
+| `utils/icons.spec.js` | 5 | 图标兜底逻辑，以及「模板用到的图标都已登记」的契约测试 |
+| `stores/user.spec.js` | 8 | 登录态持久化、坏 JSON 容错、管理员判定、退出时本地清理 |
+
+> 覆盖率只统计 `src/utils` 与 `src/stores`（有真实分支逻辑的模块）。
+> `src/api/**` 是一行一个的 URL 声明，没有分支也没有计算，属于接口集成测试的范畴。
+
 ## 默认账号
 
 | 角色 | 账号 | 密码 |

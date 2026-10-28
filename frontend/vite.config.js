@@ -55,5 +55,20 @@ export default defineConfig({
         }
       }
     }
+  },
+
+  test: {
+    // 组件与 utils 都依赖 DOM，用 jsdom 模拟浏览器环境
+    environment: 'jsdom',
+    include: ['src/**/*.spec.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      // 只统计有真实逻辑的模块。
+      // src/api/** 是一行一个的 URL 声明（url + method），
+      // 没有分支也没有计算，属于接口集成测试的范畴，算进单元覆盖率只会稀释数字。
+      include: ['src/utils/**', 'src/stores/**'],
+      exclude: ['src/**/*.spec.js']
+    }
   }
 })
