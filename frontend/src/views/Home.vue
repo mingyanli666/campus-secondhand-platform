@@ -71,7 +71,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import * as ElIcons from '@element-plus/icons-vue'
+import { resolveIcon } from '@/utils/icons'
 import { listCategories } from '@/api/category'
 import { pageProducts } from '@/api/product'
 import ProductCard from '@/components/ProductCard.vue'
@@ -88,7 +88,7 @@ const loading = ref(false)
  * 这里兜底成默认图标，避免整块渲染失败。
  */
 function iconOf(name) {
-  return name && ElIcons[name] ? name : 'Goods'
+  return resolveIcon(name)
 }
 
 function handleSearch() {

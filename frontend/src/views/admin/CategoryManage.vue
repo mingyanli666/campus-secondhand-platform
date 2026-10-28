@@ -140,7 +140,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import * as ElIcons from '@element-plus/icons-vue'
+import { resolveIcon } from '@/utils/icons'
 import {
   adminListCategories,
   createCategory,
@@ -154,6 +154,9 @@ import {
  * 全部是核对过 Element Plus 确实存在的图标 —— 之前吃过亏：
  * 数据库里写了个不存在的 "Gamepad"，构建不报错，页面上就是一个空白格。
  * 用下拉框限定范围，管理员就不会再填错。
+ *
+ * 这份清单里的图标必须同步登记到 src/utils/icons.js，
+ * 否则按需引入后它们不会被注册，下拉框里会全是空白。
  */
 const ICON_OPTIONS = [
   'Iphone', 'Cellphone', 'Monitor', 'Notebook', 'Cpu', 'Mouse',
@@ -195,7 +198,7 @@ const rules = {
 
 /** 图标名兜底：万一历史数据里有不存在的图标，退回默认图标而不是渲染空白 */
 function iconOf(name) {
-  return name && ElIcons[name] ? name : 'Goods'
+  return resolveIcon(name)
 }
 
 async function loadList() {

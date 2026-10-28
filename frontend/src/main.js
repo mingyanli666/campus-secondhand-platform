@@ -1,24 +1,27 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-import 'element-plus/dist/index.css'
 import '@/styles/index.css'
 
 import App from './App.vue'
 import router from './router'
+import { icons } from '@/utils/icons'
+
+// Element Plus 组件不再全量注册，改由 vite.config.js 里的
+// unplugin-vue-components 在模板中出现 <el-xxx> 时按需引入。
+// 但 ElMessage / ElMessageBox 是在 <script> 里手动调用的函数，
+// 不走模板解析，所以它们各自的样式要在这里显式引入。
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
 
 const app = createApp(App)
 
-// 全局注册 Element Plus 图标，模板里可直接写 <el-icon><Search /></el-icon>
-for (const [name, component] of Object.entries(ElementPlusIconsVue)) {
+// 只注册项目真正用到的图标，清单见 utils/icons.js
+for (const [name, component] of Object.entries(icons)) {
   app.component(name, component)
 }
 
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus, { locale: zhCn })
 
 app.mount('#app')
