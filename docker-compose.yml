@@ -27,10 +27,28 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: Asia/Shanghai
-    command:
-      # 和服务端保持一致，避免中文和 emoji 存进去变问号
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_general_ci
+      # ⚠️ 这一行不能删，否则中文会全变成乱码。
+      #
+      # 官方镜像首次启动时会自动执行 /docker-entrypoint-initdb.d/ 下的
+      # SQL 文件，但它调用的 mysql 客户端没有带 --default-character-set：
+      #
+      #   mysql --protocol=socket -uroot -hlocalhost --comments
+      #
+      # 客户端的默认字符集是从 locale 推导的。容器里不设 locale 时退回
+      # latin1 —— 而 MySQL 的 latin1 实际是 CP1252，于是 UTF-8 的 SQL
+      # 文件被按 CP1252 解码再存成 UTF-8，落库就成了双重编码：
+      #
+      #   「手机」正确 UTF-8  E6 89 8B E6 9C BA
+      #   实际存进去        C3A6 E280B0 E280B9 C3A6 C593 C2BA
+      #                     （0x89 -> ‰、0x8B -> ‹、0x9C -> œ，CP1252 映射）
+      #
+      # 实测：不设 LANG 时 character_set_client = latin1，
+      #       设成 C.UTF-8 后变成 utf8mb4。
+      #
+      # 顺带一提：用挂载 .cnf 配置文件的方式在这里无效 ——
+      # Windows 绑定挂载的文件权限是 0777，MySQL 会以
+      # "World-writable config file ... is ignored" 为由直接跳过。
+      LANG: C.UTF-8
     volumes:
       # 命名卷：容器删了数据还在
       - mysql-data:/var/lib/mysql
