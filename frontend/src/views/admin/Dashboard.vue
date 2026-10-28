@@ -22,9 +22,15 @@
       <template #header>平台概览</template>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="注册用户">{{ stats.userCount || 0 }} 人</el-descriptions-item>
-        <el-descriptions-item label="禁用账号">{{ stats.disabledUserCount || 0 }} 个</el-descriptions-item>
-        <el-descriptions-item label="商品总数">{{ stats.productCount || 0 }} 件</el-descriptions-item>
-        <el-descriptions-item label="累计浏览量">{{ stats.totalViewCount || 0 }} 次</el-descriptions-item>
+        <el-descriptions-item label="禁用账号"
+          >{{ stats.disabledUserCount || 0 }} 个</el-descriptions-item
+        >
+        <el-descriptions-item label="商品总数"
+          >{{ stats.productCount || 0 }} 件</el-descriptions-item
+        >
+        <el-descriptions-item label="累计浏览量"
+          >{{ stats.totalViewCount || 0 }} 次</el-descriptions-item
+        >
         <el-descriptions-item label="已售出">{{ stats.soldCount || 0 }} 件</el-descriptions-item>
         <el-descriptions-item label="待审核">
           <span :class="{ warn: stats.pendingCount > 0 }">

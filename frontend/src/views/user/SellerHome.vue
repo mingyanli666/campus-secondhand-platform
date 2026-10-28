@@ -17,8 +17,12 @@
           </div>
 
           <div class="meta text-secondary">
-            <span v-if="seller.campus"><el-icon><Location /></el-icon> {{ seller.campus }}</span>
-            <span><el-icon><Clock /></el-icon> {{ formatTime(seller.createTime) }} 加入</span>
+            <span v-if="seller.campus"
+              ><el-icon><Location /></el-icon> {{ seller.campus }}</span
+            >
+            <span
+              ><el-icon><Clock /></el-icon> {{ formatTime(seller.createTime) }} 加入</span
+            >
           </div>
 
           <p v-if="seller.intro" class="intro">{{ seller.intro }}</p>

@@ -10,15 +10,29 @@
         @keyup.enter="reload"
         @clear="reload"
       >
-        <template #prefix><el-icon><Search /></el-icon></template>
+        <template #prefix
+          ><el-icon><Search /></el-icon
+        ></template>
       </el-input>
 
-      <el-select v-model="query.role" placeholder="全部角色" clearable style="width: 140px" @change="reload">
+      <el-select
+        v-model="query.role"
+        placeholder="全部角色"
+        clearable
+        style="width: 140px"
+        @change="reload"
+      >
         <el-option label="普通用户" value="USER" />
         <el-option label="管理员" value="ADMIN" />
       </el-select>
 
-      <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 140px" @change="reload">
+      <el-select
+        v-model="query.status"
+        placeholder="全部状态"
+        clearable
+        style="width: 140px"
+        @change="reload"
+      >
         <el-option label="正常" :value="1" />
         <el-option label="已禁用" :value="0" />
       </el-select>
@@ -113,13 +127,7 @@
             >
               禁用
             </el-button>
-            <el-button
-              v-else
-              size="small"
-              type="success"
-              plain
-              @click="handleToggleStatus(row, 1)"
-            >
+            <el-button v-else size="small" type="success" plain @click="handleToggleStatus(row, 1)">
               启用
             </el-button>
 

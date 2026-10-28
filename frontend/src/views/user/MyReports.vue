@@ -21,15 +21,15 @@
           <div class="product-line" @click="goProduct(item.productId)">
             <el-image class="product-cover" :src="item.productCover" fit="cover">
               <template #error>
-                <div class="cover-placeholder"><el-icon><Picture /></el-icon></div>
+                <div class="cover-placeholder">
+                  <el-icon><Picture /></el-icon>
+                </div>
               </template>
             </el-image>
             <span class="product-title">{{ item.productTitle || '（商品已删除）' }}</span>
           </div>
 
-          <div class="reason">
-            <span class="label">举报说明：</span>{{ item.reason }}
-          </div>
+          <div class="reason"><span class="label">举报说明：</span>{{ item.reason }}</div>
 
           <div v-if="item.handleResult" class="result">
             <span class="label">处理结论：</span>{{ item.handleResult }}

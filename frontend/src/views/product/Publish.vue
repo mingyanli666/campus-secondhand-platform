@@ -3,7 +3,11 @@
     <div class="page-head">
       <h2>{{ isEdit ? '编辑商品' : '发布闲置数码' }}</h2>
       <p class="text-secondary">
-        {{ isEdit ? '修改后需要平台重新审核，审核通过才会重新上架' : '如实填写商品信息，审核通过后其他用户才能看到' }}
+        {{
+          isEdit
+            ? '修改后需要平台重新审核，审核通过才会重新上架'
+            : '如实填写商品信息，审核通过后其他用户才能看到'
+        }}
       </p>
     </div>
 
@@ -21,12 +25,7 @@
 
         <el-form-item label="商品分类" prop="categoryId">
           <el-select v-model="form.categoryId" placeholder="请选择分类" style="width: 260px">
-            <el-option
-              v-for="c in categories"
-              :key="c.id"
-              :label="c.name"
-              :value="c.id"
-            />
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
 
@@ -85,13 +84,19 @@
       <el-card shadow="never" class="section">
         <template #header>
           <span class="section-title">数码参数</span>
-          <span class="section-hint">这几项是数码产品区别于普通二手商品的关键，填得越细越容易被搜到</span>
+          <span class="section-hint"
+            >这几项是数码产品区别于普通二手商品的关键，填得越细越容易被搜到</span
+          >
         </template>
 
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="品牌" prop="brand">
-              <el-input v-model.trim="form.brand" maxlength="50" placeholder="如 Apple、小米、联想" />
+              <el-input
+                v-model.trim="form.brand"
+                maxlength="50"
+                placeholder="如 Apple、小米、联想"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -133,8 +138,18 @@
           <div class="spec-editor">
             <div v-for="(row, index) in specList" :key="index" class="spec-row">
               <el-input v-model.trim="row.key" placeholder="参数名，如 存储" class="spec-key" />
-              <el-input v-model.trim="row.value" placeholder="参数值，如 256GB" class="spec-value" />
-              <el-button :icon="Delete" circle plain type="danger" @click="specList.splice(index, 1)" />
+              <el-input
+                v-model.trim="row.value"
+                placeholder="参数值，如 256GB"
+                class="spec-value"
+              />
+              <el-button
+                :icon="Delete"
+                circle
+                plain
+                type="danger"
+                @click="specList.splice(index, 1)"
+              />
             </div>
             <el-button :icon="Plus" plain @click="specList.push({ key: '', value: '' })">
               添加一项参数
@@ -187,11 +202,19 @@
         <template #header><span class="section-title">交易信息</span></template>
 
         <el-form-item label="交易地点" prop="tradeLocation">
-          <el-input v-model.trim="form.tradeLocation" maxlength="100" placeholder="如 学校东门、三号宿舍楼下" />
+          <el-input
+            v-model.trim="form.tradeLocation"
+            maxlength="100"
+            placeholder="如 学校东门、三号宿舍楼下"
+          />
         </el-form-item>
 
         <el-form-item label="联系方式" prop="contact">
-          <el-input v-model.trim="form.contact" maxlength="100" placeholder="如 微信 xxx / QQ 123456" />
+          <el-input
+            v-model.trim="form.contact"
+            maxlength="100"
+            placeholder="如 微信 xxx / QQ 123456"
+          />
         </el-form-item>
       </el-card>
 
@@ -342,7 +365,9 @@ function handleUpload(options) {
 function collectImageUrls() {
   return fileList.value
     .map((f) => (typeof f.response === 'string' ? f.response : f.url))
-    .filter((url) => typeof url === 'string' && !url.startsWith('blob:') && !url.startsWith('data:'))
+    .filter(
+      (url) => typeof url === 'string' && !url.startsWith('blob:') && !url.startsWith('data:')
+    )
 }
 
 /* ---------------- 数据加载 ---------------- */

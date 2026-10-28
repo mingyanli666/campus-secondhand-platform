@@ -17,7 +17,9 @@
       >
         <el-form-item label="账号" prop="username">
           <el-input v-model.trim="form.username" placeholder="请输入账号" clearable>
-            <template #prefix><el-icon><User /></el-icon></template>
+            <template #prefix
+              ><el-icon><User /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 
@@ -28,7 +30,9 @@
             placeholder="请输入密码"
             show-password
           >
-            <template #prefix><el-icon><Lock /></el-icon></template>
+            <template #prefix
+              ><el-icon><Lock /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 

@@ -7,12 +7,7 @@
         <span v-show="!collapsed">管理后台</span>
       </div>
 
-      <el-menu
-        :default-active="route.path"
-        :collapse="collapsed"
-        class="menu"
-        router
-      >
+      <el-menu :default-active="route.path" :collapse="collapsed" class="menu" router>
         <el-menu-item v-for="item in menus" :key="item.path" :index="item.path">
           <el-icon><component :is="item.icon" /></el-icon>
           <template #title>{{ item.title }}</template>

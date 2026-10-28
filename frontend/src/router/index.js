@@ -155,9 +155,7 @@ router.beforeEach((to) => {
   const userStore = useUserStore()
 
   // 标题
-  document.title = to.meta.title
-    ? `${to.meta.title} - 二手数码平台`
-    : '二手数码信息发布与交流平台'
+  document.title = to.meta.title ? `${to.meta.title} - 二手数码平台` : '二手数码信息发布与交流平台'
 
   // 需要登录
   if (to.meta.requiresAuth && !userStore.isLogin) {

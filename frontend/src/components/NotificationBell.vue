@@ -50,7 +50,12 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUnreadCount, pageNotifications, readAllNotifications, readNotification } from '@/api/notification'
+import {
+  getUnreadCount,
+  pageNotifications,
+  readAllNotifications,
+  readNotification
+} from '@/api/notification'
 import { fromNow } from '@/utils/format'
 
 const router = useRouter()

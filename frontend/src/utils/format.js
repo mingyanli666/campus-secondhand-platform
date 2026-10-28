@@ -62,14 +62,7 @@ export function orderStatus(code) {
 }
 
 /** 成色选项，统一维护，避免各处手写 */
-export const CONDITION_OPTIONS = [
-  '全新',
-  '99新',
-  '95新',
-  '9成新',
-  '8成新',
-  '7成新及以下'
-]
+export const CONDITION_OPTIONS = ['全新', '99新', '95新', '9成新', '8成新', '7成新及以下']
 
 /** 质保选项 */
 export const WARRANTY_OPTIONS = ['在保', '过保', '无质保']

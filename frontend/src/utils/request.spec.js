@@ -135,8 +135,12 @@ describe('request 竞态治理（同一 requestKey 只保留最后一个请求�
     let settled = false
     const first = service.get('/a', { requestKey: 'k' })
     first.then(
-      () => { settled = true },
-      () => { settled = true }
+      () => {
+        settled = true
+      },
+      () => {
+        settled = true
+      }
     )
 
     await tick()

@@ -57,7 +57,11 @@
                 </el-form-item>
 
                 <el-form-item label="手机号" prop="phone">
-                  <el-input v-model.trim="profileForm.phone" maxlength="11" placeholder="选填，方便买家联系" />
+                  <el-input
+                    v-model.trim="profileForm.phone"
+                    maxlength="11"
+                    placeholder="选填，方便买家联系"
+                  />
                 </el-form-item>
 
                 <el-form-item label="邮箱" prop="email">
@@ -73,7 +77,11 @@
                 </el-form-item>
 
                 <el-form-item label="学校/区域" prop="campus">
-                  <el-input v-model.trim="profileForm.campus" maxlength="100" placeholder="如 XX大学 东校区" />
+                  <el-input
+                    v-model.trim="profileForm.campus"
+                    maxlength="100"
+                    placeholder="如 XX大学 东校区"
+                  />
                 </el-form-item>
 
                 <el-form-item label="个人简介" prop="intro">

@@ -40,7 +40,12 @@
         <div class="order-head">
           <span class="order-no">订单号：{{ order.orderNo }}</span>
           <span class="text-secondary">{{ formatTime(order.createTime, true) }}</span>
-          <el-tag :type="statusOf(order.status).type" size="small" effect="light" class="head-status">
+          <el-tag
+            :type="statusOf(order.status).type"
+            size="small"
+            effect="light"
+            class="head-status"
+          >
             {{ order.statusText || statusOf(order.status).text }}
           </el-tag>
         </div>
@@ -54,7 +59,9 @@
             @click="goProduct(order.productId)"
           >
             <template #error>
-              <div class="cover-placeholder"><el-icon><Picture /></el-icon></div>
+              <div class="cover-placeholder">
+                <el-icon><Picture /></el-icon>
+              </div>
             </template>
           </el-image>
 
@@ -189,9 +196,7 @@ const query = reactive({
 
 const statusOf = orderStatus
 
-const emptyText = computed(() =>
-  role.value === 'BUY' ? '还没有买过东西' : '还没有卖出过东西'
-)
+const emptyText = computed(() => (role.value === 'BUY' ? '还没有买过东西' : '还没有卖出过东西'))
 
 async function loadList() {
   loading.value = true

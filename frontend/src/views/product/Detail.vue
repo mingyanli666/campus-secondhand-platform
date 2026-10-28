@@ -8,9 +8,7 @@
         :closable="false"
         class="status-alert"
       >
-        <template #title>
-          审核未通过：{{ product.rejectReason || '未填写原因' }}
-        </template>
+        <template #title> 审核未通过：{{ product.rejectReason || '未填写原因' }} </template>
         修改商品信息后可以重新提交审核。
       </el-alert>
       <el-alert
@@ -75,28 +73,38 @@
               <span v-if="showOriginalPrice" class="original-price">
                 原价 ¥{{ formatPrice(product.originalPrice) }}
               </span>
-              <el-tag v-if="product.conditionLevel" effect="plain">{{ product.conditionLevel }}</el-tag>
-              <el-tag v-if="product.warranty" type="success" effect="plain">{{ product.warranty }}</el-tag>
+              <el-tag v-if="product.conditionLevel" effect="plain">{{
+                product.conditionLevel
+              }}</el-tag>
+              <el-tag v-if="product.warranty" type="success" effect="plain">{{
+                product.warranty
+              }}</el-tag>
             </div>
 
             <h1 class="title">{{ product.title }}</h1>
 
             <div class="stats text-secondary">
-              <span><el-icon><View /></el-icon> {{ product.viewCount }} 浏览</span>
-              <span><el-icon><Star /></el-icon> {{ product.favoriteCount }} 收藏</span>
-              <span><el-icon><Clock /></el-icon> {{ fromNow(product.createTime) }}</span>
+              <span
+                ><el-icon><View /></el-icon> {{ product.viewCount }} 浏览</span
+              >
+              <span
+                ><el-icon><Star /></el-icon> {{ product.favoriteCount }} 收藏</span
+              >
+              <span
+                ><el-icon><Clock /></el-icon> {{ fromNow(product.createTime) }}</span
+              >
             </div>
 
             <el-descriptions :column="2" border size="small" class="params">
-              <el-descriptions-item label="分类">{{ product.categoryName || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="分类">{{
+                product.categoryName || '-'
+              }}</el-descriptions-item>
               <el-descriptions-item label="品牌">{{ product.brand || '-' }}</el-descriptions-item>
               <el-descriptions-item label="型号">{{ product.model || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="购入时间">{{ product.purchaseDate || '-' }}</el-descriptions-item>
-              <el-descriptions-item
-                v-for="item in specList"
-                :key="item.key"
-                :label="item.key"
-              >
+              <el-descriptions-item label="购入时间">{{
+                product.purchaseDate || '-'
+              }}</el-descriptions-item>
+              <el-descriptions-item v-for="item in specList" :key="item.key" :label="item.key">
                 {{ item.value }}
               </el-descriptions-item>
             </el-descriptions>
@@ -118,12 +126,7 @@
                 <el-button type="primary" @click="router.push(`/publish/${product.id}`)">
                   编辑商品
                 </el-button>
-                <el-button
-                  v-if="product.status === 1"
-                  @click="handleOffShelf"
-                >
-                  下架
-                </el-button>
+                <el-button v-if="product.status === 1" @click="handleOffShelf"> 下架 </el-button>
                 <el-button
                   v-if="product.status === 2 || product.status === 4"
                   type="warning"
@@ -134,11 +137,7 @@
                 <el-button type="danger" plain @click="handleDelete">删除</el-button>
               </template>
               <template v-else>
-                <el-button
-                  v-if="product.status === 1"
-                  type="primary"
-                  @click="openOrderDialog"
-                >
+                <el-button v-if="product.status === 1" type="primary" @click="openOrderDialog">
                   <el-icon><ShoppingCart /></el-icon>
                   立即下单
                 </el-button>
@@ -214,12 +213,7 @@
         </div>
       </div>
 
-      <el-form
-        ref="orderFormRef"
-        :model="orderForm"
-        :rules="orderRules"
-        label-position="top"
-      >
+      <el-form ref="orderFormRef" :model="orderForm" :rules="orderRules" label-position="top">
         <el-form-item label="联系方式" prop="contact">
           <el-input
             v-model.trim="orderForm.contact"
@@ -257,9 +251,7 @@
 
       <template #footer>
         <el-button @click="orderVisible = false">取消</el-button>
-        <el-button type="primary" :loading="ordering" @click="submitOrder">
-          提交订单
-        </el-button>
+        <el-button type="primary" :loading="ordering" @click="submitOrder"> 提交订单 </el-button>
       </template>
     </el-dialog>
 
@@ -273,12 +265,7 @@
         class="report-alert"
       />
 
-      <el-form
-        ref="reportFormRef"
-        :model="reportForm"
-        :rules="reportRules"
-        label-position="top"
-      >
+      <el-form ref="reportFormRef" :model="reportForm" :rules="reportRules" label-position="top">
         <el-form-item label="举报类型" prop="type">
           <el-radio-group v-model="reportForm.type">
             <el-radio v-for="t in REPORT_TYPES" :key="t.value" :value="t.value">
@@ -301,9 +288,7 @@
 
       <template #footer>
         <el-button @click="reportVisible = false">取消</el-button>
-        <el-button type="danger" :loading="reporting" @click="submitReport">
-          提交举报
-        </el-button>
+        <el-button type="danger" :loading="reporting" @click="submitReport"> 提交举报 </el-button>
       </template>
     </el-dialog>
   </div>

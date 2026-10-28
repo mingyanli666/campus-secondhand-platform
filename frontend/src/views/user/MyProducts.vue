@@ -24,9 +24,16 @@
     <div v-loading="loading" class="list">
       <div v-for="item in list" :key="item.id" class="item app-card">
         <div class="item-main">
-          <el-image class="item-cover" :src="item.coverImage" fit="cover" @click="goDetail(item.id)">
+          <el-image
+            class="item-cover"
+            :src="item.coverImage"
+            fit="cover"
+            @click="goDetail(item.id)"
+          >
             <template #error>
-              <div class="cover-placeholder"><el-icon><Picture /></el-icon></div>
+              <div class="cover-placeholder">
+                <el-icon><Picture /></el-icon>
+              </div>
             </template>
           </el-image>
 
@@ -66,11 +73,7 @@
           >
             编辑
           </el-button>
-          <el-button
-            v-if="item.status === 1"
-            size="small"
-            @click="handleOffShelf(item)"
-          >
+          <el-button v-if="item.status === 1" size="small" @click="handleOffShelf(item)">
             下架
           </el-button>
           <el-button
@@ -115,7 +118,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'

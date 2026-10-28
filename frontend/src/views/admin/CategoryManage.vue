@@ -92,7 +92,12 @@
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input v-model.trim="form.name" maxlength="50" show-word-limit placeholder="如：平板电脑" />
+          <el-input
+            v-model.trim="form.name"
+            maxlength="50"
+            show-word-limit
+            placeholder="如：平板电脑"
+          />
         </el-form-item>
 
         <el-form-item label="图标" prop="icon">
@@ -159,13 +164,43 @@ import {
  * 否则按需引入后它们不会被注册，下拉框里会全是空白。
  */
 const ICON_OPTIONS = [
-  'Iphone', 'Cellphone', 'Monitor', 'Notebook', 'Cpu', 'Mouse',
-  'Camera', 'Headset', 'Microphone', 'Film', 'VideoPlay', 'Watch',
-  'Printer', 'Box', 'Trophy', 'Basketball', 'Football', 'Bicycle',
-  'Suitcase', 'ShoppingCart', 'Wallet', 'Present', 'Discount', 'Postcard',
-  'Document', 'DocumentCopy', 'Files', 'Reading', 'Grid',
-  'Compass', 'Aim', 'MagicStick', 'Lightning', 'Star', 'Bell',
-  'Goods', 'MoreFilled'
+  'Iphone',
+  'Cellphone',
+  'Monitor',
+  'Notebook',
+  'Cpu',
+  'Mouse',
+  'Camera',
+  'Headset',
+  'Microphone',
+  'Film',
+  'VideoPlay',
+  'Watch',
+  'Printer',
+  'Box',
+  'Trophy',
+  'Basketball',
+  'Football',
+  'Bicycle',
+  'Suitcase',
+  'ShoppingCart',
+  'Wallet',
+  'Present',
+  'Discount',
+  'Postcard',
+  'Document',
+  'DocumentCopy',
+  'Files',
+  'Reading',
+  'Grid',
+  'Compass',
+  'Aim',
+  'MagicStick',
+  'Lightning',
+  'Star',
+  'Bell',
+  'Goods',
+  'MoreFilled'
 ]
 
 const router = useRouter()

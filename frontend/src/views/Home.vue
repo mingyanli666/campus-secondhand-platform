@@ -13,7 +13,9 @@
             clearable
             @keyup.enter="handleSearch"
           >
-            <template #prefix><el-icon><Search /></el-icon></template>
+            <template #prefix
+              ><el-icon><Search /></el-icon
+            ></template>
           </el-input>
           <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
         </div>
@@ -30,12 +32,7 @@
           </el-link>
         </div>
         <div class="category-grid">
-          <div
-            v-for="c in categories"
-            :key="c.id"
-            class="category-item"
-            @click="goCategory(c.id)"
-          >
+          <div v-for="c in categories" :key="c.id" class="category-item" @click="goCategory(c.id)">
             <el-icon :size="22" color="var(--el-color-primary)">
               <component :is="iconOf(c.icon)" />
             </el-icon>

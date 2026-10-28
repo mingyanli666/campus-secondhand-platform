@@ -9,7 +9,13 @@
           </div>
         </template>
       </el-image>
-      <el-tag v-if="showStatus" class="status-tag" :type="statusInfo.type" size="small" effect="dark">
+      <el-tag
+        v-if="showStatus"
+        class="status-tag"
+        :type="statusInfo.type"
+        size="small"
+        effect="dark"
+      >
         {{ statusInfo.text }}
       </el-tag>
     </div>
@@ -30,19 +36,14 @@
       </div>
 
       <div class="price-row">
-        <span class="price">
-          <small>¥</small>{{ formatPrice(product.price) }}
-        </span>
+        <span class="price"> <small>¥</small>{{ formatPrice(product.price) }} </span>
         <span v-if="showOriginalPrice" class="original-price">
           ¥{{ formatPrice(product.originalPrice) }}
         </span>
       </div>
 
       <div class="meta">
-        <span
-          class="seller-link text-ellipsis"
-          @click.stop="goSeller"
-        >
+        <span class="seller-link text-ellipsis" @click.stop="goSeller">
           {{ product.sellerNickname || '未知卖家' }}
         </span>
         <span class="text-secondary">{{ fromNow(product.createTime) }}</span>

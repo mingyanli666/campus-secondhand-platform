@@ -21,12 +21,7 @@
         style="width: 160px"
         @change="reload"
       >
-        <el-option
-          v-for="t in REPORT_TYPES"
-          :key="t.value"
-          :label="t.label"
-          :value="t.value"
-        />
+        <el-option v-for="t in REPORT_TYPES" :key="t.value" :label="t.label" :value="t.value" />
       </el-select>
     </div>
 
@@ -38,7 +33,9 @@
             <div class="product-cell">
               <el-image class="cell-cover" :src="row.productCover" fit="cover">
                 <template #error>
-                  <div class="cover-placeholder"><el-icon><Picture /></el-icon></div>
+                  <div class="cover-placeholder">
+                    <el-icon><Picture /></el-icon>
+                  </div>
                 </template>
               </el-image>
               <div class="cell-info">
@@ -157,9 +154,7 @@
 
       <template #footer>
         <el-button @click="handleVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="submitHandle">
-          确认处理
-        </el-button>
+        <el-button type="primary" :loading="submitting" @click="submitHandle"> 确认处理 </el-button>
       </template>
     </el-dialog>
 

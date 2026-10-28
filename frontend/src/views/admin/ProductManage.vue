@@ -25,7 +25,9 @@
           @keyup.enter="reload"
           @clear="reload"
         >
-          <template #prefix><el-icon><Search /></el-icon></template>
+          <template #prefix
+            ><el-icon><Search /></el-icon
+          ></template>
         </el-input>
 
         <el-select
@@ -51,7 +53,9 @@
             <div class="product-cell">
               <el-image class="cell-cover" :src="row.coverImage" fit="cover">
                 <template #error>
-                  <div class="cover-placeholder"><el-icon><Picture /></el-icon></div>
+                  <div class="cover-placeholder">
+                    <el-icon><Picture /></el-icon>
+                  </div>
                 </template>
               </el-image>
               <div class="cell-info">
@@ -143,7 +147,11 @@
     </el-card>
 
     <!-- 审核弹窗 -->
-    <el-dialog v-model="auditVisible" :title="auditForm.pass ? '审核通过' : '审核驳回'" width="520px">
+    <el-dialog
+      v-model="auditVisible"
+      :title="auditForm.pass ? '审核通过' : '审核驳回'"
+      width="520px"
+    >
       <el-alert
         v-if="auditForm.pass"
         type="success"
@@ -207,7 +215,12 @@
 
     <!-- 强制下架弹窗 -->
     <el-dialog v-model="forceOffVisible" title="强制下架" width="480px">
-      <el-form ref="forceOffFormRef" :model="forceOffForm" :rules="forceOffRules" label-position="top">
+      <el-form
+        ref="forceOffFormRef"
+        :model="forceOffForm"
+        :rules="forceOffRules"
+        label-position="top"
+      >
         <el-form-item label="下架原因" prop="reason">
           <el-input
             v-model.trim="forceOffForm.reason"
@@ -242,16 +255,20 @@
           <el-descriptions-item label="售价">¥{{ formatPrice(detail.price) }}</el-descriptions-item>
           <el-descriptions-item label="品牌">{{ detail.brand || '-' }}</el-descriptions-item>
           <el-descriptions-item label="型号">{{ detail.model || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="成色">{{ detail.conditionLevel || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="成色">{{
+            detail.conditionLevel || '-'
+          }}</el-descriptions-item>
           <el-descriptions-item label="质保">{{ detail.warranty || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="购入时间">{{ detail.purchaseDate || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="交易地点">{{ detail.tradeLocation || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="联系方式" :span="2">{{ detail.contact || '-' }}</el-descriptions-item>
-          <el-descriptions-item
-            v-for="item in specList"
-            :key="item.key"
-            :label="item.key"
-          >
+          <el-descriptions-item label="购入时间">{{
+            detail.purchaseDate || '-'
+          }}</el-descriptions-item>
+          <el-descriptions-item label="交易地点">{{
+            detail.tradeLocation || '-'
+          }}</el-descriptions-item>
+          <el-descriptions-item label="联系方式" :span="2">{{
+            detail.contact || '-'
+          }}</el-descriptions-item>
+          <el-descriptions-item v-for="item in specList" :key="item.key" :label="item.key">
             {{ item.value }}
           </el-descriptions-item>
         </el-descriptions>
@@ -290,18 +307,10 @@
 
         <div class="drawer-actions">
           <template v-if="detail.status === 0">
-            <el-button type="success" @click="detailVisible = false; openAudit(currentRow, true)">
-              通过
-            </el-button>
-            <el-button type="danger" @click="detailVisible = false; openAudit(currentRow, false)">
-              驳回
-            </el-button>
+            <el-button type="success" @click="auditFromDrawer(true)"> 通过 </el-button>
+            <el-button type="danger" @click="auditFromDrawer(false)"> 驳回 </el-button>
           </template>
-          <el-button
-            v-if="detail.status === 1"
-            type="warning"
-            @click="detailVisible = false; openForceOff(currentRow)"
-          >
+          <el-button v-if="detail.status === 1" type="warning" @click="forceOffFromDrawer()">
             强制下架
           </el-button>
         </div>
@@ -312,7 +321,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   adminDeleteProduct,
@@ -334,7 +343,6 @@ const QUICK_REASONS = [
   '疑似虚假或违禁商品'
 ]
 
-const router = useRouter()
 const route = useRoute()
 
 const loading = ref(false)
@@ -462,11 +470,10 @@ async function submitForceOff() {
 /* ---------------- 删除 ---------------- */
 async function handleDelete(row) {
   try {
-    await ElMessageBox.confirm(
-      `确定删除「${row.title}」吗？删除后卖家也无法恢复。`,
-      '警告',
-      { type: 'warning', confirmButtonText: '确定删除' }
-    )
+    await ElMessageBox.confirm(`确定删除「${row.title}」吗？删除后卖家也无法恢复。`, '警告', {
+      type: 'warning',
+      confirmButtonText: '确定删除'
+    })
   } catch {
     return
   }
@@ -495,6 +502,22 @@ async function openDetail(row) {
   } finally {
     detailLoading.value = false
   }
+}
+
+/**
+ * 抽屉里直接审核。
+ * 抽成具名函数而不是内联 `@click="detailVisible = false; openAudit(...)"`：
+ * 多语句内联处理器在 Prettier 拆分长行时会丢掉分号，变成语法错误。
+ */
+function auditFromDrawer(pass) {
+  detailVisible.value = false
+  openAudit(currentRow.value, pass)
+}
+
+/** 抽屉里直接强制下架，同样先关抽屉再开弹层，避免两层遮罩叠在一起 */
+function forceOffFromDrawer() {
+  detailVisible.value = false
+  openForceOff(currentRow.value)
 }
 
 function parseSpec(spec) {

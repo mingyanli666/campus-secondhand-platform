@@ -49,9 +49,19 @@
       <div class="filter-row">
         <span class="filter-label">价格</span>
         <div class="filter-options price-filter">
-          <el-input-number v-model="priceRange[0]" :min="0" :controls="false" placeholder="最低价" />
+          <el-input-number
+            v-model="priceRange[0]"
+            :min="0"
+            :controls="false"
+            placeholder="最低价"
+          />
           <span class="dash">-</span>
-          <el-input-number v-model="priceRange[1]" :min="0" :controls="false" placeholder="最高价" />
+          <el-input-number
+            v-model="priceRange[1]"
+            :min="0"
+            :controls="false"
+            placeholder="最高价"
+          />
           <el-button size="small" @click="applyPrice">确定</el-button>
           <el-button size="small" text @click="resetPrice">重置</el-button>
         </div>

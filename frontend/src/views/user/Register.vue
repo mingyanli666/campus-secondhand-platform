@@ -7,28 +7,33 @@
         <p class="text-secondary">注册后即可发布闲置数码、收藏心仪好物</p>
       </div>
 
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        size="large"
-        label-position="top"
-      >
+      <el-form ref="formRef" :model="form" :rules="rules" size="large" label-position="top">
         <el-form-item label="账号" prop="username">
           <el-input v-model.trim="form.username" placeholder="4-20 位字母或数字" clearable>
-            <template #prefix><el-icon><User /></el-icon></template>
+            <template #prefix
+              ><el-icon><User /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 
         <el-form-item label="昵称" prop="nickname">
           <el-input v-model.trim="form.nickname" placeholder="别人看到的名字" clearable>
-            <template #prefix><el-icon><Star /></el-icon></template>
+            <template #prefix
+              ><el-icon><Star /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input v-model.trim="form.password" type="password" placeholder="6-20 位" show-password>
-            <template #prefix><el-icon><Lock /></el-icon></template>
+          <el-input
+            v-model.trim="form.password"
+            type="password"
+            placeholder="6-20 位"
+            show-password
+          >
+            <template #prefix
+              ><el-icon><Lock /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 
@@ -39,7 +44,9 @@
             placeholder="请再次输入密码"
             show-password
           >
-            <template #prefix><el-icon><Lock /></el-icon></template>
+            <template #prefix
+              ><el-icon><Lock /></el-icon
+            ></template>
           </el-input>
         </el-form-item>
 
@@ -101,7 +108,11 @@ const validateAgreement = (rule, value, callback) => {
 const rules = {
   username: [
     { required: true, message: '请输入账号', trigger: 'blur' },
-    { pattern: /^[a-zA-Z0-9_]{4,20}$/, message: '账号为 4-20 位字母、数字或下划线', trigger: 'blur' }
+    {
+      pattern: /^[a-zA-Z0-9_]{4,20}$/,
+      message: '账号为 4-20 位字母、数字或下划线',
+      trigger: 'blur'
+    }
   ],
   nickname: [
     { required: true, message: '请输入昵称', trigger: 'blur' },

@@ -64,7 +64,13 @@
               <el-button v-if="canReply" link type="primary" size="small" @click="startReply(item)">
                 回复
               </el-button>
-              <el-button v-if="item.canDelete" link type="danger" size="small" @click="handleDelete(item)">
+              <el-button
+                v-if="item.canDelete"
+                link
+                type="danger"
+                size="small"
+                @click="handleDelete(item)"
+              >
                 删除
               </el-button>
             </div>
@@ -111,10 +117,22 @@
                 </div>
                 <div class="content">{{ reply.content }}</div>
                 <div class="comment-actions">
-                  <el-button v-if="canReply" link type="primary" size="small" @click="startReply(reply)">
+                  <el-button
+                    v-if="canReply"
+                    link
+                    type="primary"
+                    size="small"
+                    @click="startReply(reply)"
+                  >
                     回复
                   </el-button>
-                  <el-button v-if="reply.canDelete" link type="danger" size="small" @click="handleDelete(reply)">
+                  <el-button
+                    v-if="reply.canDelete"
+                    link
+                    type="danger"
+                    size="small"
+                    @click="handleDelete(reply)"
+                  >
                     删除
                   </el-button>
                 </div>
