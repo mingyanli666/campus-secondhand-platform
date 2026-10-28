@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# 提交前只检查「本次暂存的文件」，不做全量检查 ——
+# 全量 lint 会让提交慢到让人想加 --no-verify。
+#
+# lint-staged 装在 frontend，配置也在 frontend（.lintstagedrc.json），
+# 所以先切到 frontend 再执行，这样它能找到本地的 eslint / prettier。
+#
+# --no-stash：跳过 lint-staged 的自动备份（git stash create + rev-parse）。
+# 本机 git 是 2.19.1（2018 年），走备份流程会报
+# "fatal: Needed a single revision" 导致提交被拦下。
+# 跳过备份的代价是：如果 lint 任务改了文件而中途出错，没有自动还原点。
+# 实际影响很小 —— 任务只是 eslint --fix 和 prettier --write，都会重新暂存。
+# 升级 git 到 2.30+ 后可以去掉这个参数。
+cd frontend && npx lint-staged --no-stash

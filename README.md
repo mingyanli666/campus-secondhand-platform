@@ -156,6 +156,17 @@ npm run dev
 
 浏览器打开 http://localhost:5173
 
+### 6.（可选）安装 Git 提交钩子
+
+```bash
+# 回到仓库根目录
+npm install
+```
+
+根目录的 `package.json` 只装仓库级工具（husky + commitlint），
+安装后会在 `.husky/` 下挂上提交钩子：提交前自动 lint 暂存的文件，
+并校验提交信息格式。不装也不影响项目运行，只是少了这两道检查。
+
 ## 测试
 
 ```bash
@@ -226,6 +237,45 @@ npm run test:cov  # 带覆盖率
 
 > 覆盖率只统计 `src/utils` 与 `src/stores`（有真实分支逻辑的模块）。
 > `src/api/**` 是一行一个的 URL 声明，没有分支也没有计算，属于接口集成测试的范畴。
+
+## 代码规范与提交规范
+
+```bash
+cd frontend
+npm run lint          # ESLint 检查
+npm run lint:fix      # 自动修复
+npm run format        # Prettier 格式化
+npm run format:check  # 只检查不改
+```
+
+**分工**：格式（缩进、引号、换行）归 Prettier，代码质量（未使用变量、可疑写法、Vue 模板陷阱）归 ESLint。
+`eslint-config-prettier` 放在配置数组最后，负责关掉所有与 Prettier 冲突的格式类规则，
+避免两个工具互相打架。
+
+Prettier 的配置刻意贴合项目原有风格（无分号、单引号、100 列、不强制尾逗号），
+所以首次引入时只有 24 个文件需要重排，而不是全量重排。
+
+**提交规范**（Conventional Commits，由 commitlint 校验）：
+
+```
+<type>(<scope>): <subject>
+
+feat(web): 请求层竞态治理
+fix(api): 修复禁用用户后旧 token 仍可用
+docs: 补充 Redis 缓存实现讲解
+```
+
+允许的 type：`feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert`
+
+**Git hooks**（husky，装在仓库根目录）：
+
+| 钩子 | 动作 |
+| --- | --- |
+| `pre-commit` | 对本次暂存的文件跑 eslint --fix + prettier --write，只检查改动部分 |
+| `commit-msg` | 校验提交信息是否符合上面的格式 |
+
+> husky 与 commitlint 放在仓库根目录而不是 `frontend/`：提交规范管的是整个仓库的提交，
+> 后端的提交同样要遵守；而 eslint / prettier 是前端专属，留在 `frontend/`。
 
 ## 默认账号
 

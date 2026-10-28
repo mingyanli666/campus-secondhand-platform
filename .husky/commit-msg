@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+# 校验提交信息是否符合 Conventional Commits。
+# $1 是 git 传进来的提交信息文件路径（通常是 .git/COMMIT_EDITMSG），
+# 这里在仓库根目录执行，路径可以直接用。
+npx --no-install commitlint --edit "$1"
