@@ -1,0 +1,25 @@
+# ============================================================
+# 生产 / 容器环境覆盖项。
+# 由 docker-compose 传 SPRING_PROFILES_ACTIVE=prod 激活，
+# 只写「和开发环境不一样」的部分，其余继承 application.yml。
+# ============================================================
+
+mybatis-plus:
+  configuration:
+    # 生产不打 SQL：一是量大，二是 SQL 参数里可能带用户隐私
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+# 接口文档只在开发环境开。
+# 生产暴露 Knife4j 等于把全部接口、参数结构、枚举值告诉外人。
+springdoc:
+  api-docs:
+    enabled: false
+swagger-ui:
+  enabled: false
+knife4j:
+  enable: false
+
+logging:
+  level:
+    root: info
+    com.digital.platform: info

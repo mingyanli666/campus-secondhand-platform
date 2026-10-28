@@ -38,6 +38,14 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- 健康检查：给容器编排提供「应用真的起来了」的判据。
+             只暴露 /actuator/health，其余端点（env、beans、configprops）
+             会把数据库密码和 JWT 密钥吐出来，必须关掉。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- MyBatis-Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>

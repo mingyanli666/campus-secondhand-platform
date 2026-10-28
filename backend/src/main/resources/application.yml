@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   tomcat:
     max-swallow-size: -1
 
@@ -11,19 +11,24 @@ spring:
   # application-local.yml 已被 .gitignore 排除，里面放本机的数据库密码，
   # 这样真实密码不会进版本库。别人 clone 下来没有这个文件也没关系 ——
   # 会回落到下面的 ${DB_PASSWORD:123456} 默认值。
+  #
+  # 容器部署时由 docker-compose 传 SPRING_PROFILES_ACTIVE=prod，
+  # 走 application-prod.yml 的一套覆盖项（关 SQL 日志、关接口文档等）。
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/used_digital_platform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    # 主机、端口、库名都抽成环境变量：本机跑是 localhost，
+    # 容器里由 compose 传 DB_HOST=mysql 指向服务名
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:used_digital_platform}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: ${DB_USERNAME:root}
     # 不要把真实密码写进这个文件：它会随代码提交到公开仓库
     password: ${DB_PASSWORD:123456}
     hikari:
       # 连接池配置：高并发场景下保证连接可用
       minimum-idle: 5
-      maximum-pool-size: 20
+      maximum-pool-size: ${DB_POOL_SIZE:20}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
@@ -58,7 +63,7 @@ mybatis-plus:
   type-aliases-package: com.digital.platform.entity
   configuration:
     map-underscore-to-camel-case: true
-    # 开发阶段打印 SQL，上线时注释掉
+    # 开发阶段打印 SQL；application-prod.yml 里会覆盖成不打印
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     banner: false
@@ -71,20 +76,40 @@ mybatis-plus:
 # 自定义配置
 platform:
   jwt:
-    # HS256 要求密钥至少 32 字节
-    secret: used-digital-platform-jwt-secret-key-2026-graduation-project
+    # HS256 要求密钥至少 32 字节。
+    # 线上必须用 JWT_SECRET 覆盖成随机值 —— 否则别人拿到仓库里这个默认值，
+    # 就能自己签发任意用户（包括管理员）的 token。
+    secret: ${JWT_SECRET:used-digital-platform-jwt-secret-key-2026-graduation-project}
     # token 有效期（小时）
-    expire-hours: 72
+    expire-hours: ${JWT_EXPIRE_HOURS:72}
     header: Authorization
   file:
-    # 图片上传根目录，相对项目运行目录
-    upload-path: ./uploads/
+    # 图片上传根目录。容器里映射到挂载卷，容器重建图片不丢
+    upload-path: ${UPLOAD_PATH:./uploads/}
     # 允许上传的图片后缀
     allow-ext: jpg,jpeg,png,gif,webp,bmp
     # 单张图片最大 10MB
     max-size: 10485760
   cors:
-    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+    # 容器部署时前端与接口同源（nginx 反代），这条用不上；
+    # 保留是为了本地前后端分离开发
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+
+# 健康检查。只暴露 health，不暴露 env / beans / configprops ——
+# 那几个端点会把数据库密码、JWT 密钥原样吐出来。
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    redis:
+      # Redis 挂了不该让整个应用被判为不健康（业务会自动降级查库），
+      # 所以把 Redis 从健康检查里摘掉，只保留数据库
+      enabled: false
 
 springdoc:
   api-docs:

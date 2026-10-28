@@ -1,0 +1,8 @@
+# 构建产物由 Dockerfile 里的 mvn 生成，不要把本机的 target 带进镜像
+target/
+# 本机上传的图片不进镜像，运行时用数据卷挂载
+uploads/
+logs/
+# IDE
+.idea/
+*.iml
