@@ -1,0 +1,9 @@
+# 依赖和产物在镜像里重新生成，不要从本机拷进去
+node_modules/
+dist/
+coverage/
+.vite/
+# 这些只对本地开发有意义
+.eslintcache
+Dockerfile
+.dockerignore
