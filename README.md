@@ -68,10 +68,13 @@
 
 ```
 used-digital-platform/
-├── docs/                  # 开发文档
-├── sql/                   # 数据库脚本
-├── backend/               # Spring Boot 后端服务
-└── frontend/              # Vue 3 前端应用
+├── docs/                       # 开发文档
+├── sql/                        # 数据库脚本（容器首次启动会自动执行）
+├── backend/                    # Spring Boot 后端服务（含 Dockerfile）
+├── frontend/                   # Vue 3 前端应用（含 Dockerfile + nginx.conf）
+├── .github/workflows/ci.yml    # CI 流水线
+├── docker-compose.yml          # 四服务编排
+└── .env.example                # 部署参数模板
 ```
 
 ## 开发文档
@@ -89,8 +92,44 @@ used-digital-platform/
 | [09-演示数据与系统自检](docs/09-演示数据与系统自检.md) | 演示数据设计、38 项功能自检清单、答辩演示脚本 |
 | [10-卖家主页实现讲解](docs/10-卖家主页实现讲解.md) | 公开资料与私有资料的边界、查询复用与参数覆盖、事件冒泡 |
 | [11-Redis缓存实现讲解](docs/11-Redis缓存实现讲解.md) | 缓存穿透/雪崩/一致性、浏览量计数回写、降级设计、压测方法与真实数据 |
+| [12-部署与运维](docs/12-部署与运维.md) | 多阶段构建、compose 编排、nginx 配置、日志规范、健康检查、CI |
 
-## 快速开始
+## 容器化部署（推荐）
+
+只需要 Docker，不用在本机装 MySQL / Redis / JDK / Maven / Node。
+
+```bash
+cp .env.example .env          # 按需修改密码与密钥
+docker compose up -d --build  # 构建并启动四个服务
+```
+
+浏览器打开 <http://localhost>（端口被占用时改 `.env` 里的 `WEB_PORT`）。
+
+```
+浏览器 ──:80──▶ frontend (nginx)
+                  ├── /         前端静态文件 + SPA 路由回退
+                  ├── /api/     反向代理 ──▶ backend:8080
+                  └── /uploads/ 反向代理 ──▶ backend:8080
+
+                    backend ──┬──▶ mysql:3306   （命名卷持久化）
+                              └──▶ redis:6379   （挂了自动降级查库）
+```
+
+**只有 nginx 对外暴露端口**，MySQL / Redis / 后端都在内网，不会占用宿主机的
+3306 / 6379 / 8080。
+
+常用命令：
+
+```bash
+docker compose ps                  # 看状态与健康检查
+docker compose logs -f backend     # 跟后端日志
+docker compose down                # 停止（保留数据）
+docker compose down -v             # 停止并清空数据（慎用）
+```
+
+更多细节见 [12-部署与运维](docs/12-部署与运维.md)。
+
+## 快速开始（本地开发）
 
 ### 1. 准备数据库
 
