@@ -1,0 +1,145 @@
+# ============================================================
+# 一键部署：MySQL + Redis + 后端 + 前端(nginx)
+#
+#   cp .env.example .env   # 先按需改一下密码和密钥
+#   docker compose up -d --build
+#   浏览器打开 http://localhost
+#
+# 启动顺序靠 healthcheck 保证，不是靠 depends_on 的先后：
+# depends_on 只能保证「容器启动了」，不能保证「服务能用了」。
+# 数据库还在初始化时后端就去连，会直接报连接失败退出。
+#
+# 这里刻意不写 container_name：
+# 写死容器名会让 docker compose up --scale backend=2 直接报名字冲突，
+# 而且容易和本机已有的同名容器（比如手工 docker run 建的）撞上。
+# 用 compose 自动生成的名字，服务名照样能用于 exec / logs。
+# ============================================================
+
+name: used-digital-platform
+
+services:
+  # ------------------------------------------------------------
+  # MySQL
+  # ------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      # 和服务端保持一致，避免中文和 emoji 存进去变问号
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    volumes:
+      # 命名卷：容器删了数据还在
+      - mysql-data:/var/lib/mysql
+      # 首次启动时自动执行（目录已存在则跳过，改了脚本要删卷重来）
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./sql/demo-data.sql:/docker-entrypoint-initdb.d/02-demo-data.sql:ro
+    healthcheck:
+      # mysqladmin ping 通了才算真的能接受连接。
+      # $$ 是转义：让容器里的 shell 去展开变量，而不是 compose 展开
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - udp
+
+  # ------------------------------------------------------------
+  # Redis：商品详情缓存 + 浏览量计数
+  # 挂了不影响功能（后端会自动降级查库），只是没有缓存收益
+  # ------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - udp
+
+  # ------------------------------------------------------------
+  # 后端
+  # ------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # prod profile 会关掉 SQL 日志、关掉接口文档
+      SPRING_PROFILES_ACTIVE: prod
+
+      # 用服务名连，不用 localhost ——
+      # 容器里的 localhost 指的是容器自己，不是宿主机
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: used_digital_platform
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # 没配就启动失败，而不是悄悄用一个弱密钥跑起来
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET 未设置，请先 cp .env.example .env 并填好}
+
+      UPLOAD_PATH: /app/uploads
+      LOG_DIR: /app/logs
+      TZ: Asia/Shanghai
+    volumes:
+      # 上传的图片放命名卷，容器重建不丢
+      - upload-data:/app/uploads
+      # 演示数据用的是仓库里自带的占位图（backend/uploads/demo），
+      # 它们不会自动出现在上面那个空的命名卷里 —— 不挂这一行的话，
+      # 演示商品的封面全是裂图。只读挂载，应用只往 /app/uploads/年/月/ 写。
+      - ./backend/uploads/demo:/app/uploads/demo:ro
+      # 日志直接落到宿主机目录，方便运维查看
+      - ./logs:/app/logs
+    healthcheck:
+      # 用 Actuator 的健康检查，它会真的去 ping 数据库，
+      # 比「端口通了」靠谱得多
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - udp
+
+  # ------------------------------------------------------------
+  # 前端：nginx 托管静态文件 + 反代后端
+  # 只有它对外暴露端口，后端和数据库都在内网，不直接对外
+  # ------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-80}:80"
+    networks:
+      - udp
+
+volumes:
+  mysql-data:
+  redis-data:
+  upload-data:
+
+networks:
+  udp:
+    driver: bridge
