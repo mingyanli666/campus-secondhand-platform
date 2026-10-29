@@ -128,6 +128,39 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!-- 代码覆盖率。prepare-agent 挂到 JVM 上采集，test 阶段结束后出报告。
+                 mvn test 会在 target/site/jacoco/index.html 生成 HTML 报告。 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <!-- 实体类 / DTO / VO 只有 getter/setter，测它们没有意义，
+                             算进覆盖率只会把数字冲高、掩盖真正没测到的业务逻辑 -->
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/vo/**</exclude>
+                        <exclude>**/*Application.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
