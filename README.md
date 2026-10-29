@@ -95,6 +95,7 @@ used-digital-platform/
 | [12-部署与运维](docs/12-部署与运维.md) | 多阶段构建、compose 编排、nginx 配置、日志规范、健康检查、CI |
 | [13-测试用例设计](docs/13-测试用例设计.md) | 五种用例设计方法、完整用例清单、需求覆盖矩阵、覆盖率与不足 |
 | [14-缺陷报告](docs/14-缺陷报告.md) | 7 个真实缺陷：禁用后旧 token 仍有效、驳回原因清不掉、举报处置联动失败等 |
+| [15-拓展接口预留](docs/15-拓展接口预留.md) | 智能推荐 / 价格评估 / 信誉评级：接口契约 + 能跑的基线实现 + 升级路径 |
 
 ## 容器化部署（推荐）
 
@@ -215,7 +216,7 @@ cd backend
 mvn test          # 跑测试并生成 JaCoCo 覆盖率报告
 ```
 
-**58 个 JUnit 5 单元测试**，使用 Mockito 隔离数据库依赖，不启动 Spring 上下文，整体执行约 4 秒。
+**75 个 JUnit 5 单元测试**，使用 Mockito 隔离数据库依赖，不启动 Spring 上下文，整体执行约 5 秒。
 覆盖率报告在 `backend/target/site/jacoco/index.html`。
 
 | 测试类 | 数量 | 覆盖内容 |
@@ -224,6 +225,9 @@ mvn test          # 跑测试并生成 JaCoCo 覆盖率报告
 | `AdminProductServiceImplTest` | 11 | 审核状态守卫、留痕快照、强制下架联动关闭订单 |
 | `UserServiceImplTest` | 11 | 防账号枚举、密码加密存储、禁用账号、并发注册、改密码 |
 | `OrderServiceImplTest` | 7 | 订单状态机与买卖双方权限：不能买自己的商品、一物不二卖、买家不能替卖家确认、卖家不能单方面标记完成、终态不可流转 |
+| `CreditRatingServiceImplTest` | 7 | 拓展接口：信誉打分的加分/扣分/封顶、无商品时跳过举报查询 |
+| `PriceEvaluationServiceImplTest` | 6 | 拓展接口：样本不足不给结论、±15% 边界、偏低/合理/偏高三档 |
+| `RecommendServiceImplTest` | 4 | 拓展接口：商品不存在返回空列表、limit 上限 20、实体转 VO |
 | `AuthInterceptorTest` | 3 | 鉴权：无 token 返回 401、**禁用用户的旧 token 立即失效**、越权访问返回 403 |
 | `FavoriteServiceImplTest` | 2 | 不能收藏自己的商品、唯一键冲突翻译为友好提示 |
 | `CommentServiceImplTest` | 2 | 发布者不能自问自答、**回复的回复归并到同一条一级留言下** |
@@ -233,9 +237,10 @@ mvn test          # 跑测试并生成 JaCoCo 覆盖率报告
 
 | 范围 | 行覆盖 |
 | --- | --- |
-| 全部 | 36.3% |
+| 全部 | 41.9% |
 | `service.impl`（业务核心） | **41.1%** |
 | 商品 / 审核 / 用户 | 75% / **99%** / 67% |
+| 拓展模块（推荐 / 评估 / 信誉） | **100% / 93% / 98%** |
 
 > 单元测试用 Mockito 隔离了数据库，所以**覆盖不到 SQL 层**——`ProductMapper.xml` 的动态 SQL
 > 是靠 38 项接口自检 + 容器冒烟补上的。这个取舍在
